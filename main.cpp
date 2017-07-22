@@ -13,6 +13,7 @@ int mean();
 int std();
 int sampleSize();
 float multiply(int);
+void runMultiply();
 
 int main() {
 
@@ -36,6 +37,17 @@ int main() {
  * Function which take two matrices as arguments and calculate its product sequentially. rowCount=columnCount=n
  */
 void sequentialMultiplication(int n,float** matrixA, float** matrixB){
+
+    for(int i=0; i<n ;++i){
+        for(int j=0; j<n; ++j){
+            for(int k=0; k<n; ++k){
+                matrixA[i][k]*matrixB[k][j];
+
+            }
+        }
+
+    }
+
 
 }
 
@@ -63,6 +75,17 @@ float** matrixGenarator(int n){
     }
 
 }
+
+void runMultiply(int matrixSize){
+
+    int sampleSize = 50;
+    float sum_of_execution_times = 0;
+    for(int i=0; i<sampleSize; ++i){
+         sum_of_execution_times = sum_of_execution_times + multiply(matrixSize);
+
+    }
+}
+
 
 float multiply(int matrixSize){
     float** matrixA= matrixGenarator(matrixSize);
