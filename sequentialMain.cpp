@@ -1,17 +1,13 @@
 #include <iostream>
-#include <cstdlib>
 #include <ctime>
 #include <cmath>
-#include <string>
-#include <cfloat>
-#include <limits>
 #include <random>
+#include <sys/time.h>
 
 using namespace std;
 
 float** matrixGenarator(int);
 void sequentialMultiplication(int,float**,float**, float**);
-int sizeOfTheMatrix(int,int);
 float mean(int, float*);
 float standardDeviation(int, float, float*);
 float correctSampleSizeCalculator(float,float, float, float);
@@ -21,14 +17,20 @@ void runMultiply(int,int);
 int main() {
 
     int matrix_size=200;
-    int sample_size = 10;
-    for(int i=0; i<10; ++i){
-        matrix_size = sizeOfTheMatrix(matrix_size,i);
+    int sample_size;
+    for(int i=200; i<=2000; i=i+200){
+        matrix_size = i;
+        if(i==200){
+            //corrected sample size for n=200
+            sample_size = 100;
+        }
+        else{
+            //corrected sample size for other n values
+            sample_size = 10;
+        }
+
        runMultiply(matrix_size,sample_size);
     }
-    cout<< "final matrix size : "<<matrix_size;
-
-
     return 0;
 }
 
@@ -63,12 +65,12 @@ float** matrixGenarator(int n){
         //filling random values to matrix
         //randomizing seed
         srand((unsigned)time(0));
+        float randomNumber;
         for(int i=0; i<n; ++i) {
             for (int j = 0; j < n; ++j) {
-                //This will generate a number from 0.0 to FLOAT_MAX:
-                    float randomNumber = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/FLT_MAX));
+                //This will generate a number from 0.0 to RAND_MAX:
 
-
+                randomNumber = (float)rand() / RAND_MAX * 10;
                 matrix[i][j] = randomNumber;
 
             }
@@ -93,7 +95,10 @@ void runMultiply(int matrixSize, int sampleSize){
     standardDeviation_val = standardDeviation(sampleSize,mean_val,execution_time_array);
     correctSampleSize = correctSampleSizeCalculator(z_value,r_value, standardDeviation_val, mean_val);
 
-    cout<< "correct sample size : "<<correctSampleSize<<" for matrix size :"<<matrixSize<<endl;
+    FILE *f = fopen("overview.txt", "a");
+    fprintf(f, "%s, %d, %f, %f, %f\n", "Sequential", matrixSize, sampleSize, mean_val, standardDeviation_val);
+    cout<<" for matrix size :"
+        <<matrixSize<< " mean execution time : "<< mean_val <<"s"<<" std : "<<standardDeviation_val<<"s"<<endl;
 }
 
 
@@ -102,13 +107,21 @@ float multiply(int matrixSize){
     float** matrixB = matrixGenarator(matrixSize);
     float** matrixC = matrixGenarator(matrixSize);
 
-    clock_t tStart = clock();
+    struct timeval start, end;
 
+    //clock() reporting CPU time, instead of real time.so use following method
+
+    gettimeofday(&start, NULL);
     sequentialMultiplication(matrixSize,matrixA,matrixB,matrixC);
+    gettimeofday(&end, NULL);
 
-    float execution_time = (float)(clock() - tStart)/CLOCKS_PER_SEC;
+    double delta = ((end.tv_sec - start.tv_sec) * 1000000u + end.tv_usec - start.tv_usec) / 1.e6;
 
-    return execution_time;
+    delete[] matrixA;
+    delete[] matrixB;
+    delete[] matrixC;
+
+    return delta;
 
 }
 
@@ -119,10 +132,6 @@ float correctSampleSizeCalculator(float z_value,float r_value,float std,float me
 
 }
 
-int sizeOfTheMatrix(int n,int i)
-{
-    return n+ 200*i;
-}
 
 float mean(int sampleSize, float* ExecutionTimeArray){
     float totalExecutionTime = 0;
@@ -135,7 +144,6 @@ float mean(int sampleSize, float* ExecutionTimeArray){
 
 float standardDeviation(int sampleSize, float mean, float* ExecutionTimeArray){
     float deviation = 0;
-    float std;
     for(int i=0;i<sampleSize;++i){
         deviation += pow(mean - ExecutionTimeArray[i],2)/sampleSize;
     }
