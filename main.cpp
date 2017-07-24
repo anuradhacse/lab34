@@ -4,6 +4,8 @@
 #include <cmath>
 #include <string>
 #include <cfloat>
+#include <limits>
+#include <random>
 
 using namespace std;
 
@@ -19,7 +21,7 @@ void runMultiply(int,int);
 int main() {
 
     int matrix_size=200;
-    int sample_size = 50;
+    int sample_size = 10;
     for(int i=0; i<10; ++i){
         matrix_size = sizeOfTheMatrix(matrix_size,i);
        runMultiply(matrix_size,sample_size);
@@ -59,18 +61,22 @@ float** matrixGenarator(int n){
             matrix[i] = new float[n];
 
         //filling random values to matrix
-        for(int i=0; i<n; ++i){
-            for(int j=0; j<n; ++j){
-                //randomizing seed
-                srand((unsigned)time(0));
+        //randomizing seed
+        srand((unsigned)time(0));
+        for(int i=0; i<n; ++i) {
+            for (int j = 0; j < n; ++j) {
                 //This will generate a number from 0.0 to FLOAT_MAX:
-                float randomNumber = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/FLT_MAX));
+                    float randomNumber = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/FLT_MAX));
+
 
                 matrix[i][j] = randomNumber;
 
+            }
+
         }
-            return matrix;
-    }
+
+        return matrix;
+
 
 }
 
@@ -87,7 +93,7 @@ void runMultiply(int matrixSize, int sampleSize){
     standardDeviation_val = standardDeviation(sampleSize,mean_val,execution_time_array);
     correctSampleSize = correctSampleSizeCalculator(z_value,r_value, standardDeviation_val, mean_val);
 
-    cout<< "correct sample size : "<<correctSampleSize<<"for matrix size :"<<matrixSize<<endl;
+    cout<< "correct sample size : "<<correctSampleSize<<" for matrix size :"<<matrixSize<<endl;
 }
 
 
